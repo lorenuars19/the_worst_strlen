@@ -6,7 +6,7 @@
 /*   By: lorenuar <lorenuar@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/04/03 16:15:13 by lorenuar          #+#    #+#             */
-/*   Updated: 2020/04/04 00:20:46 by lorenuar         ###   ########.fr       */
+/*   Updated: 2020/04/04 00:40:37 by lorenuar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,10 +116,12 @@ void					print_tchain(t_tchain *chain)
 		puts("NULL");
 		return ;
 	}
+	puts("\nChain :");
 	while (tmp)
 	{
-		printf("<%lu>\t[link * %p | thread id %lu | str \"%s\" | result %lu | next *> %p]\n", \
-		i++, tmp, tmp->thid, tmp->str, tmp->res, tmp->next);
+		printf("<%lu> \t [link * %p | thread id %lu | str \"%s\" | result %lu | next *> %p]\n", \
+		i, tmp, tmp->thid, tmp->str, tmp->res, tmp->next);
+		i++;
 		tmp = tmp->next;
 	}
 	printf(">> Chain of %lu link(s) <<\n", size_tchain(chain));
@@ -158,7 +160,7 @@ size_t					ft_strlen(char *str)
 	{
 		append_tchain(&head, new_tchain(str));
 #if VERBOSE == 1
-		printf("<%lu> append\r", i);
+		printf("\r<%lu> append", i);
 #endif
 		i++;
 	}
@@ -170,7 +172,7 @@ size_t					ft_strlen(char *str)
 			return (0);
 		}
 #if VERBOSE == 1
-		printf("thread %lu launched\r", tmp->thid);
+		printf("\rthread %lu launched", tmp->thid);
 #endif
 		tmp = tmp->next;
 	}
@@ -182,7 +184,7 @@ size_t					ft_strlen(char *str)
 			return (0);
 		}
 #if VERBOSE == 1
-		printf("thread %lu finished\r", tmp->thid);
+		printf("\rthread %lu finished", tmp->thid);
 #endif
 		tmp = tmp->next;
 	}
