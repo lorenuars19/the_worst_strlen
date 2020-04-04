@@ -6,7 +6,7 @@
 /*   By: lorenuar <lorenuar@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/04/03 16:15:13 by lorenuar          #+#    #+#             */
-/*   Updated: 2020/04/04 00:40:37 by lorenuar         ###   ########.fr       */
+/*   Updated: 2020/04/04 09:57:38 by lorenuar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,21 +18,47 @@
 
 #if VERBOSE == 1
 # include <stdio.h>
+# include <stdarg.h>
 #endif
 
 #ifndef N_THREADS
 # define N_THREADS	50
 #endif
 
-typedef struct		s_tchain
+struct		s_tchain
 {
 	pthread_t		thid;
 	char			*str;
 	size_t			res;
 	struct s_tchain	*next;
-}					t_tchain;
+};
+typedef	struct s_tchain	t_tchain;
 
-t_tchain			*new_tchain(char *str)
+#if VERBOSE == 1
+
+void		verbose(char *format, ...)
+{
+	va_list	args;
+
+	va_start(args, format);
+	if (VERBOSE)
+	{
+		printf(format, args);
+	}
+	va_end(args);
+}
+
+#else
+
+void		verbose(char *f, ...)
+{
+	(void)f;
+	return ;
+}
+
+#endif
+
+t_tchain	*new_tchain(char *str)
 {
 	t_tchain	*new;
 
@@ -46,7 +72,7 @@ t_tchain			*new_tchain(char *str)
 	return (new);
 }
 
-void				append_tchain(t_tchain **chain, t_tchain *link)
+void		append_tchain(t_tchain **chain, t_tchain *link)
 {
 	t_tchain *tmp;
 
@@ -66,7 +92,7 @@ void				append_tchain(t_tchain **chain, t_tchain *link)
 	}
 }
 
-size_t				size_tchain(t_tchain *chain)
+size_t		size_tchain(t_tchain *chain)
 {
 	size_t	size;
 
@@ -79,7 +105,7 @@ size_t				size_tchain(t_tchain *chain)
 	return (size);
 }
 
-void				del_tchain(t_tchain *link)
+void		del_tchain(t_tchain *link)
 {
 	if (link)
 	{
@@ -92,7 +118,7 @@ void				del_tchain(t_tchain *link)
 	}
 }
 
-void				clear_tchain(t_tchain **chain)
+void		clear_tchain(t_tchain **chain)
 {
 	t_tchain *tmp;
 
@@ -104,35 +130,36 @@ void				clear_tchain(t_tchain **chain)
 	}
 }
 
-#if VERBOSE == 1
-void					print_tchain(t_tchain *chain)
+void		print_tchain(t_tchain *chain)
 {
 	t_tchain	*tmp;
 	size_t		i;
+
 	tmp = chain;
 	i = 0;
 	if (!tmp)
 	{
-		puts("NULL");
+		verbose("NULL");
 		return ;
 	}
-	puts("\nChain :");
+	verbose("\nChain :");
 	while (tmp)
 	{
-		printf("<%lu> \t [link * %p | thread id %lu | str \"%s\" | result %lu | next *> %p]\n", \
+		verbose("<%lu> \t [link * %p | thread id %lu | str \"%s\" "\
+		"| result %lu | next *> %p]\n", \
 		i, tmp, tmp->thid, tmp->str, tmp->res, tmp->next);
 		i++;
 		tmp = tmp->next;
 	}
-	printf(">> Chain of %lu link(s) <<\n", size_tchain(chain));
+	verbose(">> Chain of %lu link(s) <<\n", size_tchain(chain));
 }
-#endif
 
-void					*thread_len(void *arg)
+void		*thread_len(void *arg)
 {
-	t_tchain *link = (t_tchain *)arg;
-	size_t	len;
+	t_tchain	*link;
+	size_t		len;
 
+	link = (t_tchain *)arg;
 	len = 0;
 	while (link->str && link->str[len])
 	{
@@ -142,7 +169,7 @@ void					*thread_len(void *arg)
 	pthread_exit(NULL);
 }
 
-size_t					ft_strlen(char *str)
+size_t		ft_strlen(char *str)
 {
 	size_t		i;
 	t_tchain	*head;
@@ -150,7 +177,7 @@ size_t					ft_strlen(char *str)
 	size_t		old_value;
 
 	head = NULL;
-	head = tmp = NULL;
+	tmp = NULL;
 	if (!str)
 	{
 		return (0);
@@ -159,38 +186,33 @@ size_t					ft_strlen(char *str)
 	while (i < N_THREADS)
 	{
 		append_tchain(&head, new_tchain(str));
-#if VERBOSE == 1
-		printf("\r<%lu> append", i);
-#endif
+		verbose("\r<%lu> append", i);
 		i++;
 	}
 	tmp = head;
 	while (tmp)
 	{
-		if(pthread_create(&tmp->thid, NULL, thread_len, (void *)tmp))
+		if (pthread_create(&tmp->thid, NULL, thread_len, (void *)tmp))
 		{
 			return (0);
 		}
-#if VERBOSE == 1
-		printf("\rthread %lu launched", tmp->thid);
-#endif
+		verbose("\rthread %lu launched", tmp->thid);
 		tmp = tmp->next;
 	}
 	tmp = head;
 	while (tmp)
 	{
-		if(pthread_join(tmp->thid, NULL))
+		if (pthread_join(tmp->thid, NULL))
 		{
 			return (0);
 		}
-#if VERBOSE == 1
-		printf("\rthread %lu finished", tmp->thid);
-#endif
+		verbose("\rthread %lu finished", tmp->thid);
 		tmp = tmp->next;
 	}
-#if VERBOSE == 1
-	print_tchain(head);
-#endif
+	if (VERBOSE)
+	{
+		print_tchain(head);
+	}
 	tmp = head;
 	old_value = head->res;
 	while (tmp)
@@ -203,5 +225,4 @@ size_t					ft_strlen(char *str)
 	}
 	return (old_value);
 	pthread_exit(NULL);
-
 }
