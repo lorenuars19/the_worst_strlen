@@ -1,5 +1,6 @@
 # The worst strlen
-If I did not make it, **who** would have made it ?
+If I did not make it, **who** would have made it ?<br>
+It is also a pretty basic introduction to using POSIXThreads with chained lists
 # Usage
 Use `gcc -pthread` at compile time
 # Settings
